@@ -1,3 +1,5 @@
+import 'package:first_project/custom_textfield.dart';
+import 'package:first_project/scene_2.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -15,21 +17,27 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Market'),
+      home: const Sahne1(title: 'Müşteri Bilgileri'),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
+class Sahne1 extends StatefulWidget {
+  const Sahne1({Key? key, required this.title}) : super(key: key);
 
   final String title;
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<Sahne1> createState() => _Sahne1State();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _Sahne1State extends State<Sahne1> {
+  late TextEditingController search;
+  @override
+  void initState() {
+    search = TextEditingController();
+    super.initState();
+  }
   @override
   Widget build(BuildContext context) {
 
@@ -39,28 +47,20 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Container(
         alignment: Alignment.bottomCenter,
-        color: Colors.amber,
+        color: Colors.grey,
         child: Column(
+                   mainAxisAlignment: MainAxisAlignment.start,
+           children: [CustomTextfield(labeText: 'Telefon Numarası',controller: search,),
           
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
             Row(
-              children: const <Widget>[
-              Text(
-                'selam',
-              ),
-                
-              ]
-            ),
-            Row(
-              children: const <Widget>[
-              Text(
-                'selam',
-              ),
-                
-              ],
-            ),
-          ],
+              children: [ElevatedButton(
+                child: const Text('Satışa Devam'),
+                onPressed:(){
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const CustomerInfoPage()));
+                }
+                )]
+          )
+           ]
         ),
       ),
     );
