@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class CustomTextfield extends StatefulWidget {
- CustomTextfield({Key? key,required this.labeText, required this.controller,required this.validator,required this.keyboardType,required this.inputFormatter}) : super(key: key);
+ const CustomTextfield({Key? key,required this.labeText, required this.controller,required this.validator,required this.keyboardType, this.inputFormatter}) : super(key: key);
 final String labeText;
 final TextEditingController controller;
 final String? Function(String?)? validator;
 final TextInputType keyboardType;
-final List<TextInputFormatter> inputFormatter;
+final List<TextInputFormatter>? inputFormatter;
 
   @override
   State<CustomTextfield> createState() => _CustomTextfieldState();

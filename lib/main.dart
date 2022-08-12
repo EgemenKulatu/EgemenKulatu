@@ -69,13 +69,16 @@ class _Sahne1State extends State<Sahne1> {
               labeText: 'Telefon Numarası',
               controller: search,
               validator: (String? val) {
-                if (val == null || val == "")
+                if (val == null || val == "") {
                   return 'Telefon numarası alanı boş olamaz';
+                }
                 var firstCharacter = val[0];
-                if (firstCharacter != '0')
+                if (firstCharacter != '0') {
                   return 'Telefon numarası 0 ile başlamalıdır';
-                if (val.length != 10)
+                }
+                if (val.length != 10) {
                   return 'Telefon numarası 10 karakter olmalıdır';
+                }
                 return null;
               },
               keyboardType: TextInputType.number,
@@ -94,7 +97,8 @@ class _Sahne1State extends State<Sahne1> {
                                     id: 0,
                                     phoneNumber: '0',
                                     name: 'nihai',
-                                    surname: 'müşteri'),
+                                    surname: 'müşteri',
+                                    isApproved: true),
                               )));
                 }),
             ElevatedButton(
@@ -115,7 +119,6 @@ class _Sahne1State extends State<Sahne1> {
                       );
                       ScaffoldMessenger.of(context).showSnackBar(snackBar);
                     } else {
-                      print(customerResult.name);
                       Navigator.push(
                           context,
                           MaterialPageRoute(

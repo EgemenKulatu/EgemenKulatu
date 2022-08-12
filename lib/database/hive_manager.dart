@@ -19,8 +19,8 @@ class SharedPreferencesManager {
     var jsonString=getString(key);
     return jsonString;
   }
-  Future add(value,String phoneNumber)async{
-   await _box.put(phoneNumber, value);
+  Future add(value,String key)async{
+   await _box.put(key, value);
   }
   List<Object?> getAll(){
     return _box.values.toList();

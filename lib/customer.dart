@@ -1,23 +1,25 @@
 class Customer {
-  int? id;
+  int id;
   String? phoneNumber;
   String? name;
   String? surname;
+  bool isApproved;
 
-  Customer({this.id, this.phoneNumber, this.name, this.surname});
+  Customer({required this.id, this.phoneNumber, this.name, this.surname, required this.isApproved});
 
-  Customer.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    phoneNumber = json['phoneNumber'];
-    name = json['name'];
-    surname = json['surname'];
+  static Customer fromJson(Map<dynamic, dynamic> json) {
+    return Customer(id: json['id'], phoneNumber: json['phoneNumber'],
+    name: json['name'],
+    isApproved: json['isApproved']?? false,
+    surname: json['surname']);
   }
 
-  Map<String, dynamic> toJson() {
+  Map<dynamic, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['id'] = id;
     data['phoneNumber'] = phoneNumber;
     data['name'] = name;
+    data['isApproved'] = isApproved;
     data['surname'] = surname;
     return data;
   }
