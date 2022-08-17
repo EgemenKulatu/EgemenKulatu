@@ -1,7 +1,10 @@
 import 'package:first_project/custom_textfield.dart';
 import 'package:first_project/customer.dart';
 import 'package:first_project/database/customer_database.dart';
+import 'package:first_project/scene_3.dart';
+import 'package:first_project/scene_4.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'database/hive_manager.dart';
 
@@ -18,16 +21,28 @@ class _CustomerInfoPageState extends State<CustomerInfoPage> {
   late TextEditingController phoneController;
   late final GlobalKey<FormState> _formKey;
   final String appbarText = 'Müşteri Bilgileri';
-
+  late Customer customer;
   late final CustomerDatabase customerDatabase;
   @override
   void initState() {
-    nameController = TextEditingController(text: widget.customer.name);
-    surnameController = TextEditingController(text: widget.customer.surname);
-    phoneController = TextEditingController(text: widget.customer.phoneNumber);
+    customer = widget.customer;
+    nameController = TextEditingController(text: customer.name);
+    surnameController = TextEditingController(text: customer.surname);
+    phoneController = TextEditingController(text: customer.phoneNumber);
     _formKey = GlobalKey<FormState>();
     customerDatabase =
         CustomerDatabase(sharedPreferencesManager: SharedPreferencesManager());
+    if (!customer.isApproved && customer.id > 0) {
+      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+        print(customer.approveCode.toString());
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => ConfirmationCode(
+                      customer: customer,
+                    )));
+      });
+    }
     super.initState();
   }
 
@@ -44,93 +59,127 @@ class _CustomerInfoPageState extends State<CustomerInfoPage> {
             actions: [saveAndUpdateButton]),
         body: Form(
           key: _formKey,
-          child: Column(children: [
-            CustomTextfield(
-              labeText: 'Numara',
-              controller: phoneController,
-              validator: (String? val) {
-                if (val == null || val == "") {
-                  return 'Telefon numarası alanı boş olamaz';
-                }
-                var firstCharacter = val[0];
-                if (firstCharacter != '0') {
-                  return 'Telefon numarası 0 ile başlamalıdır';
-                }
-                if (val.length != 10) {
-                  return 'Telefon numarası 10 karakter olmalıdır';
-                }
-                return null;
-              },
-              keyboardType: TextInputType.name,
-              inputFormatter: [],
-            ),
-            CustomTextfield(
-              labeText: 'Ad',
-              controller: nameController,
-              validator: (String? val) {
-                if (val == null || val.isEmpty == true) {
-                  return 'Ad alanı boş olamaz';
-                }
-                
-                if (val.length < 2) return 'Ad 2 karakterden küçük olamaz';
-                return null;
-              },
-              keyboardType: TextInputType.name,
-            ),
-            CustomTextfield(
-              labeText: 'Soyad',
-              controller: surnameController,
-              validator: (String? val) {
-                if (val == null || val.isEmpty == true) {
-                  return 'Soyad alanı boş olamaz';
-                }
-                if (val.length < 2) return 'Soyad 2 karakterden küçük olamaz';
-                return null;
-              },
-              keyboardType: TextInputType.name,
-            )
-          ]),
+          child: Column(
+            children: [
+              CustomTextfield(
+                labeText: 'Numara',
+                controller: phoneController,
+                validator: (String? val) {
+                  if (val == null || val == "") {
+                    return 'Telefon numarası alanı boş olamaz';
+                  }
+                  var firstCharacter = val[0];
+                  if (firstCharacter != '0') {
+                    return 'Telefon numarası 0 ile başlamalıdır';
+                  }
+                  if (val.length != 10) {
+                    return 'Telefon numarası 10 karakter olmalıdır';
+                  }
+                  return null;
+                },
+                keyboardType: TextInputType.name,
+                inputFormatter: [LengthLimitingTextInputFormatter(10)],
+              ),
+              CustomTextfield(
+                labeText: 'Ad',
+                controller: nameController,
+                validator: (String? val) {
+                  if (val == null || val.isEmpty == true) {
+                    return 'Ad alanı boş olamaz';
+                  }
+
+                  if (val.length < 2) return 'Ad 2 karakterden küçük olamaz';
+                  return null;
+                },
+                keyboardType: TextInputType.name,
+              ),
+              CustomTextfield(
+                labeText: 'Soyad',
+                controller: surnameController,
+                validator: (String? val) {
+                  if (val == null || val.isEmpty == true) {
+                    return 'Soyad alanı boş olamaz';
+                  }
+                  if (val.length < 2) return 'Soyad 2 karakterden küçük olamaz';
+                  return null;
+                },
+                keyboardType: TextInputType.name,
+              ),
+              ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) => Store()));
+                  },
+                  style: ElevatedButton.styleFrom(primary: Colors.blue),
+                  child: Text('Mağaza')),
+            ],
+          ),
         ));
   }
 
   MaterialButton get saveAndUpdateButton {
-    var customerIsRegistered = widget.customer.id > 0 ? true : false;
+    var customerIsRegistered = customer.id > 0 ? true : false;
 
     return MaterialButton(
-      child: Text(customerIsRegistered ? 'GÜncelle' : 'Kaydet'),
+      child: Text(customerIsRegistered ? 'Güncelle' : 'Kaydet'),
       onPressed: () async {
         if (_formKey.currentState?.validate() == true) {
-          widget.customer.id>0? await updateCustomer(): await createCustomer();
+          customer.id > 0 ? await updateCustomer() : await createCustomer();
         }
       },
     );
   }
 
   Future createCustomer() async {
-    var customer = Customer(
+    var createdCustomer = Customer(
         id: 0,
         phoneNumber: phoneController.text,
         name: nameController.text,
         surname: surnameController.text,
         isApproved: true);
-    await customerDatabase.addCustomer(customer);
-    final snackBar = SnackBar(
-      content: const Text('Müşteri Kaydedildi'),
-      action: SnackBarAction(
-        label: '',
-        onPressed: () {},
-      ),
-    );
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+
+    var response = await customerDatabase.addCustomer(createdCustomer);
+    if (!response.isSuccess) {
+      final snackBar = SnackBar(
+        content: Text(response.meessage),
+        action: SnackBarAction(
+          label: '',
+          onPressed: () {},
+        ),
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    }
+    if (response.isSuccess) {
+      setState(() {
+        customer = response.customer as Customer;
+      });
+      final snackBar = SnackBar(
+        content: Text(response.meessage),
+        action: SnackBarAction(
+          label: '',
+          onPressed: () {},
+        ),
+      );
+
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => ConfirmationCode(
+                    customer: customer,
+                  )));
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    }
   }
+
   Future updateCustomer() async {
-    var customer = Customer(
-        id: widget.customer.id,
+    var updatedCustomer = Customer(
+        id: customer.id,
         phoneNumber: phoneController.text,
         name: nameController.text,
         surname: surnameController.text,
         isApproved: true);
-    await customerDatabase.updateCustomer(customer);
+    await customerDatabase.updateCustomer(updatedCustomer);
     final snackBar = SnackBar(
       content: const Text('Müşteri Güncellendi'),
       action: SnackBarAction(

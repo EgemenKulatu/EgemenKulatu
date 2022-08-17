@@ -82,7 +82,8 @@ class _Sahne1State extends State<Sahne1> {
                 return null;
               },
               keyboardType: TextInputType.number,
-              inputFormatter: [FilteringTextInputFormatter.digitsOnly],
+              inputFormatter: [FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(10)],
             ),
           ),
           Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [

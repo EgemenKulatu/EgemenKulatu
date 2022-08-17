@@ -1,3 +1,7 @@
+import 'dart:math';
+
+import 'package:flutter/cupertino.dart';
+
 import '../customer.dart';
 import 'hive_manager.dart';
 import 'package:collection/collection.dart' show IterableExtension;
@@ -15,11 +19,20 @@ class CustomerDatabase {
     return customer;
   }
 
-  Future addCustomer(Customer customer) async {
+  Future<CustomerResponseDTO> addCustomer(Customer customer) async {
     var customerList = getCustomerList();
+    var customerIsExists=customerList.firstWhereOrNull((element) => element.phoneNumber==customer.phoneNumber);
+    if(customerIsExists!=null){return CustomerResponseDTO(isSuccess: false,meessage: 'Bu telefona ait kayıt vardır');
+
+    }
     customer.id = lastCustomerId(customerList);
+    customer.approveCode = 1000 + Random().nextInt(8999);
+    customer.isApproved=false;
+    print(customer.approveCode.toString());
     customerList.add(customer);
-await saveCustomerList(customerList);
+    await saveCustomerList(customerList);
+    var registeredCustomer = getCustomer(customer.phoneNumber);
+    return CustomerResponseDTO(isSuccess: true,meessage: 'Başarılı şekilde kaydedildi',customer: registeredCustomer);
   }
 
   Future updateCustomer(Customer customer) async {
@@ -34,8 +47,34 @@ await saveCustomerList(customerList);
     customerList[updatedCustomerIndex].phoneNumber = customer.phoneNumber;
     await saveCustomerList(customerList);
   }
-  Future saveCustomerList(List<Customer> customerList)async{
-var customerListIterable =
+
+  Future<CustomerResponseDTO> approveCustomer(
+    int approveCode,
+    String phoneNumber,
+  ) async {
+    var approvedCustomer = getCustomer(phoneNumber);
+    if (approvedCustomer != null) {
+      if (approvedCustomer.approveCode == approveCode) {
+        approvedCustomer.isApproved = true;
+        await updateCustomer(approvedCustomer);
+        return CustomerResponseDTO(
+            customer: approvedCustomer,
+            meessage: 'onaylama başarılı',
+            isSuccess: true);
+      }
+      return CustomerResponseDTO(
+          customer: approvedCustomer,
+          meessage: 'onaylama kodu hatalı',
+          isSuccess: false);
+    }
+    return CustomerResponseDTO(
+        customer: approvedCustomer,
+        meessage: 'onaylanacak müşteri bulunamadı',
+        isSuccess: false);
+  }
+
+  Future saveCustomerList(List<Customer> customerList) async {
+    var customerListIterable =
         List<dynamic>.from(customerList.map((e) => e.toJson()));
     await sharedPreferencesManager.add(customerListIterable, customerKeyName);
   }
@@ -56,4 +95,13 @@ var customerListIterable =
           customerResult.map((model) => Customer.fromJson(model)));
     }
   }
+}
+
+class CustomerResponseDTO {
+  CustomerResponseDTO(
+      {required this.meessage, this.customer, required this.isSuccess});
+
+  String meessage;
+  bool isSuccess;
+  Customer? customer;
 }
