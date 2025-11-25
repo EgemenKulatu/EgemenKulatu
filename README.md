@@ -45,5 +45,3 @@ I am a software engineer with a strong focus on **mobile application development
 - **LinkedIn:** [linkedin.com/in/egemenkulatu](https://www.linkedin.com/in/egemenkulatu)
 
 ---
-
-<p align="center"><i>“Technology should not only work — it should inspire.”</i></p>
